@@ -234,6 +234,11 @@ impl SpritePipeline {
             let verts: Vec<SpriteVertex> =
                 quads.iter().flat_map(|q| q.iter().copied()).collect();
             let byte_size = (verts.len() * std::mem::size_of::<SpriteVertex>()) as u64;
+
+            if vertex_offset + byte_size > (MAX_SPRITES * 4 * std::mem::size_of::<SpriteVertex>()) as u64 {
+                break;
+            }
+
             queue.write_buffer(&self.vertex_buffer, vertex_offset, cast_slice(&verts));
 
             render_pass.set_bind_group(1, bg, &[]);

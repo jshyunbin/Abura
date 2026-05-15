@@ -123,9 +123,9 @@ impl ApplicationHandler for NativeApp {
                         &mut self.time,
                         FIXED_DT,
                     );
-                    self.input.end_frame();
                     self.accumulator -= FIXED_DT;
                 }
+                self.input.end_frame();
 
                 if let (Some(r), Some(p)) = (&self.renderer, &mut self.pipeline) {
                     animation_system(&mut self.world, frame_dt);
