@@ -1,9 +1,9 @@
-use abura::{
-    App, AppContext, AssetServer, Animator, AnimationClip, Collider, GravityScale,
-    Sprite, SpriteSheet, Transform, Velocity,
-};
 use abura::input::KeyCode;
-use abura::platform::native::{NativeApp, run};
+use abura::platform::native::{run, NativeApp};
+use abura::{
+    AnimationClip, Animator, App, AppContext, AssetServer, Collider, GravityScale, Sprite,
+    SpriteSheet, Transform, Velocity,
+};
 use glam::Vec2;
 use hecs::World;
 use std::collections::HashMap;
@@ -14,28 +14,65 @@ fn main() {
     let mut assets = AssetServer::new();
     let sheet = assets.load_sheet(
         "assets/player.png",
-        SpriteSheet { frame_width: 32, frame_height: 32, columns: 4, rows: 4 },
+        SpriteSheet {
+            frame_width: 32,
+            frame_height: 32,
+            columns: 4,
+            rows: 4,
+        },
     );
 
     let mut animator = Animator::new();
-    animator.add_clip("idle", AnimationClip { frames: vec![0], fps: 1.0, looping: true });
-    animator.add_clip("run",  AnimationClip { frames: vec![1, 2, 3], fps: 8.0, looping: true });
+    animator.add_clip(
+        "idle",
+        AnimationClip {
+            frames: vec![0],
+            fps: 1.0,
+            looping: true,
+        },
+    );
+    animator.add_clip(
+        "run",
+        AnimationClip {
+            frames: vec![1, 2, 3],
+            fps: 8.0,
+            looping: true,
+        },
+    );
     animator.play("idle");
 
     let mut world = World::new();
     world.spawn((
-        Transform { position: Vec2::new(320.0, 240.0), scale: Vec2::ONE, rotation: 0.0 },
-        Sprite { sheet: sheet.clone(), frame: 0, color: [1.0; 4], flip_x: false, flip_y: false },
+        Transform {
+            position: Vec2::new(320.0, 240.0),
+            scale: Vec2::ONE,
+            rotation: 0.0,
+        },
+        Sprite {
+            sheet: sheet.clone(),
+            frame: 0,
+            color: [1.0; 4],
+            flip_x: false,
+            flip_y: false,
+        },
         animator,
         Velocity::default(),
         GravityScale { scale: 1.0 },
-        Collider { half_extents: Vec2::new(14.0, 14.0) },
+        Collider {
+            half_extents: Vec2::new(14.0, 14.0),
+        },
     ));
 
     // Ground platform (static, no gravity)
     world.spawn((
-        Transform { position: Vec2::new(320.0, 450.0), scale: Vec2::ONE, rotation: 0.0 },
-        Collider { half_extents: Vec2::new(300.0, 16.0) },
+        Transform {
+            position: Vec2::new(320.0, 450.0),
+            scale: Vec2::ONE,
+            rotation: 0.0,
+        },
+        Collider {
+            half_extents: Vec2::new(300.0, 16.0),
+        },
     ));
 
     let mut app = App::new();

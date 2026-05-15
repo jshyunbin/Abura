@@ -1,10 +1,10 @@
-use std::collections::HashMap;
+use crate::renderer::sprite::{build_quad, uv_rect, SpriteVertex};
+use crate::renderer::texture::GpuTexture;
 use bytemuck::cast_slice;
 use glam::Mat4;
-use wgpu::*;
+use std::collections::HashMap;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
-use crate::renderer::sprite::{SpriteVertex, build_quad, uv_rect};
-use crate::renderer::texture::GpuTexture;
+use wgpu::*;
 
 const QUAD_INDICES: [u16; 6] = [0, 1, 2, 0, 2, 3];
 const MAX_SPRITES: usize = 10_000;
@@ -147,7 +147,9 @@ impl SpritePipeline {
         if self.texture_cache.contains_key(&handle_id) {
             return;
         }
-        let Ok(gpu_tex) = GpuTexture::from_bytes(device, queue, bytes, label) else { return };
+        let Ok(gpu_tex) = GpuTexture::from_bytes(device, queue, bytes, label) else {
+            return;
+        };
         let bg = device.create_bind_group(&BindGroupDescriptor {
             label: Some(label),
             layout: &self.texture_bind_group_layout,
@@ -229,13 +231,16 @@ impl SpritePipeline {
 
         let mut vertex_offset: u64 = 0;
         for (handle_id, quads) in &batches {
-            let Some((_, bg)) = self.texture_cache.get(handle_id) else { continue };
+            let Some((_, bg)) = self.texture_cache.get(handle_id) else {
+                continue;
+            };
 
-            let verts: Vec<SpriteVertex> =
-                quads.iter().flat_map(|q| q.iter().copied()).collect();
+            let verts: Vec<SpriteVertex> = quads.iter().flat_map(|q| q.iter().copied()).collect();
             let byte_size = (verts.len() * std::mem::size_of::<SpriteVertex>()) as u64;
 
-            if vertex_offset + byte_size > (MAX_SPRITES * 4 * std::mem::size_of::<SpriteVertex>()) as u64 {
+            if vertex_offset + byte_size
+                > (MAX_SPRITES * 4 * std::mem::size_of::<SpriteVertex>()) as u64
+            {
                 break;
             }
 
@@ -244,7 +249,8 @@ impl SpritePipeline {
             render_pass.set_bind_group(1, bg, &[]);
             render_pass.set_vertex_buffer(
                 0,
-                self.vertex_buffer.slice(vertex_offset..vertex_offset + byte_size),
+                self.vertex_buffer
+                    .slice(vertex_offset..vertex_offset + byte_size),
             );
             render_pass.set_index_buffer(self.index_buffer.slice(..), IndexFormat::Uint16);
             render_pass.draw_indexed(0..(quads.len() * 6) as u32, 0, 0..1);

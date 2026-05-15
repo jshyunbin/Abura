@@ -1,6 +1,6 @@
-use glam::Vec2;
 use crate::assets::Handle;
 use crate::ecs::components::SpriteSheet;
+use glam::Vec2;
 
 pub struct TileMap {
     pub sheet: Handle<SpriteSheet>,

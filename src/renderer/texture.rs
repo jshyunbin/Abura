@@ -17,7 +17,11 @@ impl GpuTexture {
     ) -> Result<Self, image::ImageError> {
         let img = image::load_from_memory(bytes)?.to_rgba8();
         let (width, height) = img.dimensions();
-        let size = Extent3d { width, height, depth_or_array_layers: 1 };
+        let size = Extent3d {
+            width,
+            height,
+            depth_or_array_layers: 1,
+        };
 
         let texture = device.create_texture(&TextureDescriptor {
             label: Some(label),
@@ -50,6 +54,12 @@ impl GpuTexture {
             ..Default::default()
         });
 
-        Ok(Self { texture, view, sampler, width, height })
+        Ok(Self {
+            texture,
+            view,
+            sampler,
+            width,
+            height,
+        })
     }
 }

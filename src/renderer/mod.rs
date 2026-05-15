@@ -60,7 +60,13 @@ impl Renderer {
         };
         surface.configure(&device, &config);
 
-        Self { device, queue, surface, config, surface_format }
+        Self {
+            device,
+            queue,
+            surface,
+            config,
+            surface_format,
+        }
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {

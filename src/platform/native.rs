@@ -1,3 +1,12 @@
+use crate::{
+    app::App,
+    assets::AssetServer,
+    ecs::resources::{CollisionEvents, Time},
+    ecs::systems::animation_system,
+    input::InputState,
+    renderer::{pipeline::SpritePipeline, Renderer},
+};
+use hecs::World;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
@@ -7,15 +16,6 @@ use winit::{
     event_loop::{ActiveEventLoop, EventLoop},
     keyboard::PhysicalKey,
     window::{Window, WindowId},
-};
-use hecs::World;
-use crate::{
-    app::App,
-    assets::AssetServer,
-    ecs::resources::{CollisionEvents, Time},
-    ecs::systems::animation_system,
-    input::InputState,
-    renderer::{Renderer, pipeline::SpritePipeline},
 };
 
 #[allow(dead_code)]
@@ -75,12 +75,7 @@ impl ApplicationHandler for NativeApp {
         self.last_frame = Instant::now();
     }
 
-    fn window_event(
-        &mut self,
-        event_loop: &ActiveEventLoop,
-        _id: WindowId,
-        event: WindowEvent,
-    ) {
+    fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
 
@@ -106,10 +101,7 @@ impl ApplicationHandler for NativeApp {
 
             WindowEvent::RedrawRequested => {
                 let now = Instant::now();
-                let frame_dt = now
-                    .duration_since(self.last_frame)
-                    .as_secs_f32()
-                    .min(0.1);
+                let frame_dt = now.duration_since(self.last_frame).as_secs_f32().min(0.1);
                 self.last_frame = now;
                 self.time.delta = frame_dt;
                 self.accumulator += frame_dt;
@@ -135,8 +127,7 @@ impl ApplicationHandler for NativeApp {
                         Err(_) => return,
                     };
                     let view = output.texture.create_view(&Default::default());
-                    let mut encoder =
-                        r.device.create_command_encoder(&Default::default());
+                    let mut encoder = r.device.create_command_encoder(&Default::default());
 
                     p.draw(
                         &r.device,

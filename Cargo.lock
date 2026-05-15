@@ -31,6 +31,7 @@ dependencies = [
  "glam",
  "hecs",
  "image",
+ "js-sys",
  "log",
  "pollster",
  "wasm-bindgen",

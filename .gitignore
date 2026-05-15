@@ -1,2 +1,14 @@
 .claude/
 .superpowers/
+
+# Rust build artifacts
+/target/
+
+# Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store

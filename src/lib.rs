@@ -13,4 +13,4 @@ pub use ecs::systems::*;
 pub use input::InputState;
 
 #[cfg(not(target_arch = "wasm32"))]
-pub use platform::native::{NativeApp, run};
+pub use platform::native::{run, NativeApp};

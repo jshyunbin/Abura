@@ -1,9 +1,9 @@
-use hecs::World;
 use crate::{
     assets::AssetServer,
-    ecs::resources::{Gravity, Time, CollisionEvents},
+    ecs::resources::{CollisionEvents, Gravity, Time},
     input::InputState,
 };
+use hecs::World;
 
 pub struct AppContext<'a> {
     pub world: &'a mut World,
@@ -23,7 +23,10 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
-        Self { fixed_systems: Vec::new(), gravity: Gravity::default() }
+        Self {
+            fixed_systems: Vec::new(),
+            gravity: Gravity::default(),
+        }
     }
 
     pub fn with_gravity(mut self, gravity: Gravity) -> Self {
@@ -36,7 +39,9 @@ impl App {
         self
     }
 
-    pub fn fixed_system_count(&self) -> usize { self.fixed_systems.len() }
+    pub fn fixed_system_count(&self) -> usize {
+        self.fixed_systems.len()
+    }
 
     pub fn tick(
         &self,
@@ -47,7 +52,7 @@ impl App {
         time: &mut Time,
         dt: f32,
     ) {
-        use crate::ecs::systems::{gravity_system, collision_system, transform_system};
+        use crate::ecs::systems::{collision_system, gravity_system, transform_system};
 
         time.fixed_delta = dt;
         time.elapsed += dt;
@@ -76,7 +81,9 @@ impl App {
 }
 
 impl Default for App {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[cfg(test)]
