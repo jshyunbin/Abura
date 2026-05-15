@@ -52,8 +52,9 @@ pub struct MouseState {
 
 impl MouseState {
     pub fn press(&mut self, button: MouseButton) {
-        self.just_pressed.insert(button);
-        self.pressed.insert(button);
+        if self.pressed.insert(button) {
+            self.just_pressed.insert(button);
+        }
     }
 
     pub fn release(&mut self, button: MouseButton) {
@@ -130,6 +131,19 @@ mod tests {
         assert!(!kb.is_pressed(KeyCode::Space));
         kb.end_frame();
         assert!(!kb.just_released(KeyCode::Space));
+    }
+
+    #[test]
+    fn mouse_just_pressed_fires_once() {
+        let mut mouse = MouseState::default();
+        mouse.press(MouseButton::Left);
+        assert!(mouse.just_pressed(MouseButton::Left));
+        // Simulate end of frame: clears just_pressed, button stays in pressed
+        mouse.end_frame();
+        // The OS may re-send a press event while the button is still held;
+        // just_pressed must not fire again.
+        mouse.press(MouseButton::Left);
+        assert!(!mouse.just_pressed(MouseButton::Left), "just_pressed must not fire again when already held");
     }
 
     #[test]
