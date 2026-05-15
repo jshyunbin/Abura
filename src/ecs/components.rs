@@ -57,6 +57,12 @@ pub struct SpriteSheet {
 impl SpriteSheet {
     /// Returns (x, y, width, height) in pixels for frame index `n`.
     pub fn frame_pixel_rect(&self, frame: u32) -> (u32, u32, u32, u32) {
+        debug_assert!(self.columns > 0, "SpriteSheet columns must be > 0");
+        debug_assert!(
+            frame < self.columns * self.rows,
+            "frame {} out of bounds for {}x{} grid (max {})",
+            frame, self.columns, self.rows, self.columns * self.rows
+        );
         let col = frame % self.columns;
         let row = frame / self.columns;
         (col * self.frame_width, row * self.frame_height, self.frame_width, self.frame_height)
