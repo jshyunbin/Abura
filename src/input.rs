@@ -1,0 +1,3 @@
+// stub
+
+pub struct InputState;
