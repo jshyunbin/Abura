@@ -1,0 +1,1 @@
+rd_("AoReturns the argument unchanged.00000000000000BaCalls <code>U::from(self)</code>.00000000000000DgReturns (x, y, width, height) in pixels for frame index <code>n</code>.")

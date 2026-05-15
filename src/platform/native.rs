@@ -18,6 +18,7 @@ use crate::{
     renderer::{Renderer, pipeline::SpritePipeline},
 };
 
+#[allow(dead_code)]
 const FIXED_DT: f32 = 1.0 / 60.0;
 
 pub struct NativeApp {

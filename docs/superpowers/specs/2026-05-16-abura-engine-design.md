@@ -18,7 +18,7 @@
 
 ### Non-Goals
 - Shadows, lighting, or any advanced GPU effects
-- Physics simulation (no gravity, joints, rigidbodies)
+- Full physics simulation (no joints, rigidbodies, restitution, or friction)
 - Pixel-perfect collision (game code can layer this if needed)
 - Audio (designed as a future optional plugin, not implemented now)
 - 3D rendering of any kind
@@ -96,6 +96,7 @@ Uses `hecs` as the ECS backend. The `World` is the central store for all entitie
 | `Animator` | `clips: HashMap<String, AnimationClip>`, `current: String`, `frame_index: usize`, `elapsed: f32` |
 | `Collider` | `half_extents: Vec2` (AABB relative to Transform position) |
 | `Velocity` | `value: Vec2` — applied to `Transform.position` each fixed step (`pos += vel * dt`) |
+| `GravityScale` | `scale: f32` — multiplier for the global `Gravity` resource (0.0 = unaffected, 1.0 = full) |
 | `Tag` | `Tag(pub u64)` — opaque numeric tag; game code casts its own enum discriminants in |
 
 Game code adds its own components freely — no engine registration required.
@@ -108,6 +109,7 @@ Game code adds its own components freely — no engine registration required.
 | `CollisionEvents` | `pairs: Vec<(Entity, Entity)>` — overlapping AABB pairs, cleared each fixed step |
 | `AssetServer` | Load and cache textures and spritesheets |
 | `Time` | `delta: f32`, `fixed_delta: f32`, `elapsed: f32` |
+| `Gravity` | `value: Vec2` — global gravity acceleration in pixels/s² (default `(0.0, -980.0)`) |
 
 ---
 
@@ -201,8 +203,9 @@ each frame:
 **Fixed update system order:**
 1. Input system (flush winit events → InputState)
 2. User game logic systems
-3. AABB collision system (write overlapping pairs to `CollisionEvents` resource)
-4. Transform update (apply `Velocity`: `transform.position += velocity.value * fixed_dt`)
+3. Gravity system (apply `Gravity` to entities with `Velocity + GravityScale`: `velocity += gravity * scale * dt`)
+4. AABB collision system (write overlapping pairs to `CollisionEvents` resource)
+5. Transform update (apply `Velocity`: `transform.position += velocity.value * fixed_dt`)
 
 **Render system order:**
 1. Animation system (advance Animator → write Sprite.frame)

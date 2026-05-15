@@ -1,8 +1,8 @@
-use std::collections::HashSet;
 use glam::Vec2;
+use std::collections::HashSet;
 
-pub use winit::keyboard::KeyCode;
 pub use winit::event::MouseButton;
+pub use winit::keyboard::KeyCode;
 
 #[derive(Debug, Default)]
 pub struct KeyboardState {
@@ -147,7 +147,10 @@ mod tests {
         // The OS may re-send a press event while the button is still held;
         // just_pressed must not fire again.
         mouse.press(MouseButton::Left);
-        assert!(!mouse.just_pressed(MouseButton::Left), "just_pressed must not fire again when already held");
+        assert!(
+            !mouse.just_pressed(MouseButton::Left),
+            "just_pressed must not fire again when already held"
+        );
     }
 
     #[test]

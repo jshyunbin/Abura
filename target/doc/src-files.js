@@ -1,0 +1,2 @@
+createSrcSidebar('[["abura",["",[["ecs",[],["components.rs","mod.rs","resources.rs","systems.rs"]],["platform",[],["mod.rs","native.rs"]],["renderer",[],["mod.rs","pipeline.rs","sprite.rs","texture.rs"]]],["app.rs","assets.rs","input.rs","lib.rs"]]]]');
+//{"start":19,"fragment_lengths":[230]}

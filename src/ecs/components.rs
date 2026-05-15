@@ -1,5 +1,5 @@
-use glam::Vec2;
 use crate::assets::Handle;
+use glam::Vec2;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -61,11 +61,19 @@ impl SpriteSheet {
         debug_assert!(
             frame < self.columns * self.rows,
             "frame {} out of bounds for {}x{} grid (max {})",
-            frame, self.columns, self.rows, self.columns * self.rows
+            frame,
+            self.columns,
+            self.rows,
+            self.columns * self.rows
         );
         let col = frame % self.columns;
         let row = frame / self.columns;
-        (col * self.frame_width, row * self.frame_height, self.frame_width, self.frame_height)
+        (
+            col * self.frame_width,
+            row * self.frame_height,
+            self.frame_width,
+            self.frame_height,
+        )
     }
 }
 
@@ -94,7 +102,9 @@ pub struct Animator {
 }
 
 impl Animator {
-    pub fn new() -> Self { Self::default() }
+    pub fn new() -> Self {
+        Self::default()
+    }
 
     pub fn add_clip(&mut self, name: &str, clip: AnimationClip) {
         self.clips.insert(name.to_string(), clip);
@@ -145,7 +155,12 @@ mod tests {
 
     #[test]
     fn spritesheet_frame_uv_first_frame() {
-        let sheet = SpriteSheet { frame_width: 32, frame_height: 32, columns: 4, rows: 2 };
+        let sheet = SpriteSheet {
+            frame_width: 32,
+            frame_height: 32,
+            columns: 4,
+            rows: 2,
+        };
         // frame 0 → col 0, row 0 → pixel origin (0, 0)
         let (x, y, w, h) = sheet.frame_pixel_rect(0);
         assert_eq!((x, y, w, h), (0, 0, 32, 32));
@@ -153,7 +168,12 @@ mod tests {
 
     #[test]
     fn spritesheet_frame_uv_mid_frame() {
-        let sheet = SpriteSheet { frame_width: 32, frame_height: 32, columns: 4, rows: 2 };
+        let sheet = SpriteSheet {
+            frame_width: 32,
+            frame_height: 32,
+            columns: 4,
+            rows: 2,
+        };
         // frame 5 → col = 5%4 = 1, row = 5/4 = 1 → pixel (32, 32)
         let (x, y, w, h) = sheet.frame_pixel_rect(5);
         assert_eq!((x, y, w, h), (32, 32, 32, 32));
@@ -161,7 +181,11 @@ mod tests {
 
     #[test]
     fn animator_play_resets_to_first_frame() {
-        let clip = AnimationClip { frames: vec![3, 4, 5], fps: 10.0, looping: true };
+        let clip = AnimationClip {
+            frames: vec![3, 4, 5],
+            fps: 10.0,
+            looping: true,
+        };
         let mut anim = Animator::new();
         anim.add_clip("run", clip);
         anim.play("run");
@@ -170,7 +194,11 @@ mod tests {
 
     #[test]
     fn animator_play_same_clip_does_not_reset() {
-        let clip = AnimationClip { frames: vec![0, 1, 2], fps: 10.0, looping: true };
+        let clip = AnimationClip {
+            frames: vec![0, 1, 2],
+            fps: 10.0,
+            looping: true,
+        };
         let mut anim = Animator::new();
         anim.add_clip("run", clip);
         anim.play("run");

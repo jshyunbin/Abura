@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["AnimationClip","Animator","Collider","GravityScale","Sprite","SpriteSheet","Tag","Texture","Transform","Velocity"]};

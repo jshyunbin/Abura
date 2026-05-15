@@ -1,6 +1,6 @@
+use crate::ecs::components::SpriteSheet;
 use std::collections::HashMap;
 use std::marker::PhantomData;
-use crate::ecs::components::SpriteSheet;
 
 #[derive(Debug, Clone)]
 pub struct Handle<T> {
@@ -24,10 +24,15 @@ impl<T> std::hash::Hash for Handle<T> {
 
 impl<T> Handle<T> {
     pub(crate) fn new(id: u64) -> Self {
-        Self { id, _marker: PhantomData }
+        Self {
+            id,
+            _marker: PhantomData,
+        }
     }
 
-    pub fn id(&self) -> u64 { self.id }
+    pub fn id(&self) -> u64 {
+        self.id
+    }
 }
 
 #[derive(Default)]
@@ -38,7 +43,9 @@ pub struct AssetServer {
 }
 
 impl AssetServer {
-    pub fn new() -> Self { Self::default() }
+    pub fn new() -> Self {
+        Self::default()
+    }
 
     /// Register (or retrieve) a SpriteSheet by file path.
     /// Subsequent calls with the same path return the same Handle without
@@ -64,7 +71,12 @@ mod tests {
     use crate::ecs::components::SpriteSheet;
 
     fn test_sheet() -> SpriteSheet {
-        SpriteSheet { frame_width: 32, frame_height: 32, columns: 4, rows: 4 }
+        SpriteSheet {
+            frame_width: 32,
+            frame_height: 32,
+            columns: 4,
+            rows: 4,
+        }
     }
 
     #[test]

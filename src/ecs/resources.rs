@@ -8,7 +8,9 @@ pub struct Gravity {
 
 impl Default for Gravity {
     fn default() -> Self {
-        Self { value: Vec2::new(0.0, -980.0) }
+        Self {
+            value: Vec2::new(0.0, -980.0),
+        }
     }
 }
 
@@ -25,7 +27,9 @@ pub struct CollisionEvents {
 }
 
 impl CollisionEvents {
-    pub fn clear(&mut self) { self.pairs.clear(); }
+    pub fn clear(&mut self) {
+        self.pairs.clear();
+    }
 }
 
 #[cfg(test)]
@@ -42,7 +46,9 @@ mod tests {
     #[test]
     fn collision_events_clear_empties_pairs() {
         let mut events = CollisionEvents::default();
-        events.pairs.push((hecs::Entity::DANGLING, hecs::Entity::DANGLING));
+        events
+            .pairs
+            .push((hecs::Entity::DANGLING, hecs::Entity::DANGLING));
         events.clear();
         assert!(events.pairs.is_empty());
     }

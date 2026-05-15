@@ -170,8 +170,9 @@ impl SpritePipeline {
         queue.write_buffer(&self.camera_buffer, 0, cast_slice(&proj.to_cols_array_2d()));
     }
 
-    pub fn draw<'a>(
-        &'a mut self,
+    #[allow(clippy::too_many_arguments)]
+    pub fn draw(
+        &mut self,
         device: &Device,
         queue: &Queue,
         view: &TextureView,
@@ -205,7 +206,7 @@ impl SpritePipeline {
             batches.entry(handle_id).or_default().push(quad);
         }
 
-        for (handle_id, _) in &batches {
+        for handle_id in batches.keys() {
             if let Some(bytes) = texture_bytes.get(handle_id) {
                 self.ensure_uploaded(device, queue, *handle_id, bytes, "sprite");
             }
