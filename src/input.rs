@@ -70,6 +70,10 @@ impl MouseState {
         self.just_pressed.contains(&b)
     }
 
+    pub fn just_released(&self, button: MouseButton) -> bool {
+        self.just_released.contains(&button)
+    }
+
     pub fn end_frame(&mut self) {
         self.delta = Vec2::ZERO;
         self.just_pressed.clear();
