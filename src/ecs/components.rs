@@ -46,7 +46,7 @@ pub struct Collider {
 // Opaque GPU texture marker — actual GpuTexture lives in the renderer
 pub struct Texture;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SpriteSheet {
     pub frame_width: u32,
     pub frame_height: u32,
