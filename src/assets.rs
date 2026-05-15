@@ -2,10 +2,24 @@ use std::collections::HashMap;
 use std::marker::PhantomData;
 use crate::ecs::components::SpriteSheet;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone)]
 pub struct Handle<T> {
     pub(crate) id: u64,
     _marker: PhantomData<T>,
+}
+
+impl<T> PartialEq for Handle<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl<T> Eq for Handle<T> {}
+
+impl<T> std::hash::Hash for Handle<T> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
 }
 
 impl<T> Handle<T> {
