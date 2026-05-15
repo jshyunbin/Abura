@@ -1,10 +1,12 @@
+use crate::ecs::components::{Animator, Collider, GravityScale, Sprite, Transform, Velocity};
+use crate::ecs::resources::{CollisionEvents, Gravity};
 use hecs::World;
-use crate::ecs::components::{Sprite, Animator, Velocity, GravityScale, Transform, Collider};
-use crate::ecs::resources::{Gravity, CollisionEvents};
 
 pub fn animation_system(world: &mut World, dt: f32) {
     for (_, (animator, sprite)) in world.query_mut::<(&mut Animator, &mut Sprite)>() {
-        let Some(clip) = animator.current_clip().cloned() else { continue };
+        let Some(clip) = animator.current_clip().cloned() else {
+            continue;
+        };
         animator.elapsed += dt;
         let interval = 1.0 / clip.fps;
         if animator.elapsed >= interval {
@@ -16,7 +18,9 @@ pub fn animation_system(world: &mut World, dt: f32) {
                 animator.frame_index = 0;
             }
         }
-        sprite.frame = clip.frames[animator.frame_index];
+        if let Some(&frame) = clip.frames.get(animator.frame_index) {
+            sprite.frame = frame;
+        }
     }
 }
 
@@ -56,12 +60,17 @@ pub fn transform_system(world: &mut World, dt: f32) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ecs::components::*;
     use crate::assets::AssetServer;
+    use crate::ecs::components::*;
     use hecs::World;
 
     fn make_sprite(server: &mut AssetServer) -> Sprite {
-        let sheet = SpriteSheet { frame_width: 32, frame_height: 32, columns: 4, rows: 4 };
+        let sheet = SpriteSheet {
+            frame_width: 32,
+            frame_height: 32,
+            columns: 4,
+            rows: 4,
+        };
         Sprite {
             sheet: server.load_sheet("test.png", sheet),
             frame: 0,
@@ -73,8 +82,22 @@ mod tests {
 
     fn make_run_animator() -> Animator {
         let mut anim = Animator::new();
-        anim.add_clip("run", AnimationClip { frames: vec![0, 1, 2], fps: 10.0, looping: true });
-        anim.add_clip("die", AnimationClip { frames: vec![3, 4], fps: 10.0, looping: false });
+        anim.add_clip(
+            "run",
+            AnimationClip {
+                frames: vec![0, 1, 2],
+                fps: 10.0,
+                looping: true,
+            },
+        );
+        anim.add_clip(
+            "die",
+            AnimationClip {
+                frames: vec![3, 4],
+                fps: 10.0,
+                looping: false,
+            },
+        );
         anim.play("run");
         anim
     }
@@ -120,7 +143,9 @@ mod tests {
         let mut world = World::new();
         let gravity = Gravity::default(); // (0, -980)
         let entity = world.spawn((
-            Velocity { value: glam::Vec2::ZERO },
+            Velocity {
+                value: glam::Vec2::ZERO,
+            },
             GravityScale { scale: 1.0 },
         ));
         gravity_system(&mut world, &gravity, 1.0);
@@ -134,7 +159,9 @@ mod tests {
         let mut world = World::new();
         let gravity = Gravity::default();
         let entity = world.spawn((
-            Velocity { value: glam::Vec2::ZERO },
+            Velocity {
+                value: glam::Vec2::ZERO,
+            },
             GravityScale { scale: 0.0 },
         ));
         gravity_system(&mut world, &gravity, 1.0);
@@ -146,7 +173,9 @@ mod tests {
     fn entities_without_gravity_scale_are_unaffected() {
         let mut world = World::new();
         let gravity = Gravity::default();
-        let entity = world.spawn((Velocity { value: glam::Vec2::ZERO },));
+        let entity = world.spawn((Velocity {
+            value: glam::Vec2::ZERO,
+        },));
         gravity_system(&mut world, &gravity, 1.0);
         let vel = world.get::<&Velocity>(entity).unwrap();
         assert_eq!(vel.value, glam::Vec2::ZERO);
@@ -156,12 +185,22 @@ mod tests {
     fn overlapping_aabbs_generate_collision_event() {
         let mut world = World::new();
         let a = world.spawn((
-            Transform { position: glam::Vec2::new(0.0, 0.0), ..Default::default() },
-            Collider { half_extents: glam::Vec2::new(16.0, 16.0) },
+            Transform {
+                position: glam::Vec2::new(0.0, 0.0),
+                ..Default::default()
+            },
+            Collider {
+                half_extents: glam::Vec2::new(16.0, 16.0),
+            },
         ));
         let b = world.spawn((
-            Transform { position: glam::Vec2::new(10.0, 0.0), ..Default::default() },
-            Collider { half_extents: glam::Vec2::new(16.0, 16.0) },
+            Transform {
+                position: glam::Vec2::new(10.0, 0.0),
+                ..Default::default()
+            },
+            Collider {
+                half_extents: glam::Vec2::new(16.0, 16.0),
+            },
         ));
         let mut events = CollisionEvents::default();
         collision_system(&world, &mut events);
@@ -173,12 +212,22 @@ mod tests {
     fn non_overlapping_aabbs_produce_no_events() {
         let mut world = World::new();
         world.spawn((
-            Transform { position: glam::Vec2::ZERO, ..Default::default() },
-            Collider { half_extents: glam::Vec2::new(8.0, 8.0) },
+            Transform {
+                position: glam::Vec2::ZERO,
+                ..Default::default()
+            },
+            Collider {
+                half_extents: glam::Vec2::new(8.0, 8.0),
+            },
         ));
         world.spawn((
-            Transform { position: glam::Vec2::new(100.0, 0.0), ..Default::default() },
-            Collider { half_extents: glam::Vec2::new(8.0, 8.0) },
+            Transform {
+                position: glam::Vec2::new(100.0, 0.0),
+                ..Default::default()
+            },
+            Collider {
+                half_extents: glam::Vec2::new(8.0, 8.0),
+            },
         ));
         let mut events = CollisionEvents::default();
         collision_system(&world, &mut events);
@@ -189,12 +238,22 @@ mod tests {
     fn touching_at_exact_edge_is_not_a_collision() {
         let mut world = World::new();
         world.spawn((
-            Transform { position: glam::Vec2::ZERO, ..Default::default() },
-            Collider { half_extents: glam::Vec2::new(8.0, 8.0) },
+            Transform {
+                position: glam::Vec2::ZERO,
+                ..Default::default()
+            },
+            Collider {
+                half_extents: glam::Vec2::new(8.0, 8.0),
+            },
         ));
         world.spawn((
-            Transform { position: glam::Vec2::new(16.0, 0.0), ..Default::default() },
-            Collider { half_extents: glam::Vec2::new(8.0, 8.0) },
+            Transform {
+                position: glam::Vec2::new(16.0, 0.0),
+                ..Default::default()
+            },
+            Collider {
+                half_extents: glam::Vec2::new(8.0, 8.0),
+            },
         ));
         let mut events = CollisionEvents::default();
         collision_system(&world, &mut events);
@@ -205,8 +264,13 @@ mod tests {
     fn transform_system_applies_velocity() {
         let mut world = World::new();
         let entity = world.spawn((
-            Transform { position: glam::Vec2::ZERO, ..Default::default() },
-            Velocity { value: glam::Vec2::new(100.0, 0.0) },
+            Transform {
+                position: glam::Vec2::ZERO,
+                ..Default::default()
+            },
+            Velocity {
+                value: glam::Vec2::new(100.0, 0.0),
+            },
         ));
         transform_system(&mut world, 0.5);
         let t = world.get::<&Transform>(entity).unwrap();
