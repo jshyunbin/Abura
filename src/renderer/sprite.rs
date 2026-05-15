@@ -47,10 +47,26 @@ pub fn build_quad(
     let (u0, u1) = if flip_x { (u1, u0) } else { (u0, u1) };
     let (v0, v1) = if flip_y { (v1, v0) } else { (v0, v1) };
     [
-        SpriteVertex { position: [pos[0] - hw, pos[1] - hh], uv: [u0, v1], color },
-        SpriteVertex { position: [pos[0] + hw, pos[1] - hh], uv: [u1, v1], color },
-        SpriteVertex { position: [pos[0] + hw, pos[1] + hh], uv: [u1, v0], color },
-        SpriteVertex { position: [pos[0] - hw, pos[1] + hh], uv: [u0, v0], color },
+        SpriteVertex {
+            position: [pos[0] - hw, pos[1] - hh],
+            uv: [u0, v1],
+            color,
+        },
+        SpriteVertex {
+            position: [pos[0] + hw, pos[1] - hh],
+            uv: [u1, v1],
+            color,
+        },
+        SpriteVertex {
+            position: [pos[0] + hw, pos[1] + hh],
+            uv: [u1, v0],
+            color,
+        },
+        SpriteVertex {
+            position: [pos[0] - hw, pos[1] + hh],
+            uv: [u0, v0],
+            color,
+        },
     ]
 }
 
