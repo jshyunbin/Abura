@@ -2,7 +2,7 @@ pub mod app;
 pub mod assets;
 pub mod ecs;
 pub mod input;
-mod platform;
+pub mod platform;
 pub mod renderer;
 
 pub use app::{App, AppContext};
