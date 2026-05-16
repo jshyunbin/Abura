@@ -1,6 +1,6 @@
-# Abura
+# 油 Abura
 
-A minimal, fast-to-ship 2D game engine in Rust. Named after the Japanese word for oil (油) — because a good engine should grease the path from idea to shipped game.
+A minimal, fast-to-ship 2D game engine in Rust.
 
 ## Features
 
