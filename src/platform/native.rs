@@ -73,6 +73,9 @@ impl ApplicationHandler for NativeApp {
         self.renderer = Some(renderer);
         self.pipeline = Some(pipeline);
         self.last_frame = Instant::now();
+        if let Some(w) = &self.window {
+            w.request_redraw();
+        }
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
