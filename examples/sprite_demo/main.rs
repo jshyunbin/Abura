@@ -1,3 +1,4 @@
+use abura::ecs::resources::Gravity;
 use abura::input::KeyCode;
 use abura::platform::native::{run, NativeApp};
 use abura::{
@@ -75,7 +76,9 @@ fn main() {
         },
     ));
 
-    let mut app = App::new();
+    // The camera uses y-down coordinates (y=0 at top, y increases downward),
+    // so gravity must be positive-y to make things fall toward the bottom.
+    let mut app = App::new().with_gravity(Gravity { value: Vec2::new(0.0, 980.0) });
 
     app.add_fixed_system(|ctx: &mut AppContext| {
         for (_, (vel, anim)) in ctx.world.query_mut::<(&mut Velocity, &mut Animator)>() {
