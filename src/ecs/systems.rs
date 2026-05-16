@@ -57,6 +57,44 @@ pub fn transform_system(world: &mut World, dt: f32) {
     }
 }
 
+pub fn resolution_system(world: &mut World) {
+    use std::collections::HashSet;
+
+    let dynamic_ids: HashSet<hecs::Entity> =
+        world.query::<(&Velocity,)>().iter().map(|(e, _)| e).collect();
+
+    let statics: Vec<(glam::Vec2, glam::Vec2)> = world
+        .query::<(&Transform, &Collider)>()
+        .iter()
+        .filter(|(e, _)| !dynamic_ids.contains(e))
+        .map(|(_, (t, c))| (t.position, c.half_extents))
+        .collect();
+
+    if statics.is_empty() {
+        return;
+    }
+
+    for (_, (transform, velocity, collider)) in
+        world.query_mut::<(&mut Transform, &mut Velocity, &Collider)>()
+    {
+        for &(spos, she) in &statics {
+            let diff = transform.position - spos;
+            let overlap_x = (collider.half_extents.x + she.x) - diff.x.abs();
+            let overlap_y = (collider.half_extents.y + she.y) - diff.y.abs();
+
+            if overlap_x > 0.0 && overlap_y > 0.0 {
+                if overlap_x < overlap_y {
+                    transform.position.x += diff.x.signum() * overlap_x;
+                    velocity.value.x = 0.0;
+                } else {
+                    transform.position.y += diff.y.signum() * overlap_y;
+                    velocity.value.y = 0.0;
+                }
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -275,5 +313,127 @@ mod tests {
         transform_system(&mut world, 0.5);
         let t = world.get::<&Transform>(entity).unwrap();
         assert!((t.position.x - 50.0).abs() < 0.01);
+    }
+
+    // resolution_system tests
+    // Ground is at y=450, half_extents (300, 16) → top edge at y=434.
+    // Player half_extents (14, 14) → when resting: player.y = 434 - 14 = 420.
+
+    fn spawn_ground(world: &mut World) {
+        world.spawn((
+            Transform {
+                position: glam::Vec2::new(320.0, 450.0),
+                ..Default::default()
+            },
+            Collider {
+                half_extents: glam::Vec2::new(300.0, 16.0),
+            },
+        ));
+    }
+
+    #[test]
+    fn resolution_pushes_player_out_of_ground() {
+        let mut world = World::new();
+        spawn_ground(&mut world);
+        // Player slightly inside the ground (bottom edge at 436, top of ground at 434)
+        let player = world.spawn((
+            Transform {
+                position: glam::Vec2::new(320.0, 422.0),
+                ..Default::default()
+            },
+            Velocity { value: glam::Vec2::new(0.0, 50.0) },
+            Collider { half_extents: glam::Vec2::new(14.0, 14.0) },
+        ));
+        resolution_system(&mut world);
+        let t = world.get::<&Transform>(player).unwrap();
+        // Player bottom edge should sit exactly on ground top edge (y=434)
+        assert!((t.position.y - 420.0).abs() < 0.01, "expected y≈420, got {}", t.position.y);
+    }
+
+    #[test]
+    fn resolution_zeroes_y_velocity_on_ground_contact() {
+        let mut world = World::new();
+        spawn_ground(&mut world);
+        let player = world.spawn((
+            Transform {
+                position: glam::Vec2::new(320.0, 422.0),
+                ..Default::default()
+            },
+            Velocity { value: glam::Vec2::new(10.0, 200.0) },
+            Collider { half_extents: glam::Vec2::new(14.0, 14.0) },
+        ));
+        resolution_system(&mut world);
+        let v = world.get::<&Velocity>(player).unwrap();
+        assert_eq!(v.value.y, 0.0);
+        assert_eq!(v.value.x, 10.0, "x velocity should be unchanged");
+    }
+
+    #[test]
+    fn resolution_resolves_wall_on_x_axis() {
+        let mut world = World::new();
+        // Tall wall at x=100, half_extents (10, 200)
+        world.spawn((
+            Transform {
+                position: glam::Vec2::new(100.0, 240.0),
+                ..Default::default()
+            },
+            Collider { half_extents: glam::Vec2::new(10.0, 200.0) },
+        ));
+        // Player overlapping wall from the right: player left edge at 106, wall right edge at 110
+        let player = world.spawn((
+            Transform {
+                position: glam::Vec2::new(118.0, 240.0),
+                ..Default::default()
+            },
+            Velocity { value: glam::Vec2::new(-100.0, 0.0) },
+            Collider { half_extents: glam::Vec2::new(14.0, 14.0) },
+        ));
+        resolution_system(&mut world);
+        let t = world.get::<&Transform>(player).unwrap();
+        let v = world.get::<&Velocity>(player).unwrap();
+        // Player left edge (t.position.x - 14) should equal wall right edge (110)
+        assert!((t.position.x - 124.0).abs() < 0.01, "expected x≈124, got {}", t.position.x);
+        assert_eq!(v.value.x, 0.0);
+        assert_eq!(v.value.y, 0.0);
+    }
+
+    #[test]
+    fn resolution_does_not_affect_non_overlapping_entities() {
+        let mut world = World::new();
+        spawn_ground(&mut world);
+        let player = world.spawn((
+            Transform {
+                position: glam::Vec2::new(320.0, 200.0),
+                ..Default::default()
+            },
+            Velocity { value: glam::Vec2::new(0.0, 50.0) },
+            Collider { half_extents: glam::Vec2::new(14.0, 14.0) },
+        ));
+        resolution_system(&mut world);
+        let t = world.get::<&Transform>(player).unwrap();
+        assert!((t.position.y - 200.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn resolution_does_not_move_static_bodies() {
+        let mut world = World::new();
+        let ground = world.spawn((
+            Transform {
+                position: glam::Vec2::new(320.0, 450.0),
+                ..Default::default()
+            },
+            Collider { half_extents: glam::Vec2::new(300.0, 16.0) },
+        ));
+        world.spawn((
+            Transform {
+                position: glam::Vec2::new(320.0, 422.0),
+                ..Default::default()
+            },
+            Velocity { value: glam::Vec2::new(0.0, 50.0) },
+            Collider { half_extents: glam::Vec2::new(14.0, 14.0) },
+        ));
+        resolution_system(&mut world);
+        let t = world.get::<&Transform>(ground).unwrap();
+        assert_eq!(t.position.y, 450.0);
     }
 }

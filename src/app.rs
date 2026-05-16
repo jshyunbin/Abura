@@ -52,7 +52,8 @@ impl App {
         time: &mut Time,
         dt: f32,
     ) {
-        use crate::ecs::systems::{collision_system, gravity_system, transform_system};
+        use crate::ecs::systems::{collision_system, gravity_system, resolution_system,
+            transform_system};
 
         time.fixed_delta = dt;
         time.elapsed += dt;
@@ -75,8 +76,9 @@ impl App {
             }
         }
 
-        collision_system(world, collisions);
         transform_system(world, dt);
+        collision_system(world, collisions);
+        resolution_system(world);
     }
 }
 
